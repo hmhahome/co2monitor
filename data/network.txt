@@ -1,0 +1,5 @@
+mod:0
+aps:LocalCO2-01
+app:123456789
+sts:WifiName
+stp:PasswordWifi

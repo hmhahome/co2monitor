@@ -1,0 +1,377 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+ <meta charset="utf-8"> 
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <link rel="stylesheet" href="pico.min.css">
+ <style type="text/css">
+  main.container, header.container{
+	padding:0pt;
+  }
+  .chart-container {
+	max-width:1130px;
+  }
+  button.good {
+	background-color:#388e3c;
+	border-color:#388e3c;
+  }
+  button.good::after, button.average::after, button.average::before, button.unhealthy::after { 
+	display: block;
+	float:left;
+	width: 1rem;
+	height: calc(1rem * var(--line-height,1.5));
+	-webkit-margin-start: calc(var(--spacing,1rem) * 0.5);
+	margin-inline-start: calc(var(--spacing,1rem) * .5);
+	transform: rotate(90deg);
+	background-image: var(--icon-chevron-button-inverse);
+	background-position: right center;
+	background-size: 1rem auto;
+	background-repeat: no-repeat;
+	content: "";
+	transition: transform var(--transition);
+  }
+  button.average::before { 
+	transform: rotate(-90deg);
+	float:left;
+  }	
+  button.unhealthy::after { 
+	transform: rotate(-90deg);
+  }	 
+  h2.good {
+	color:#388e3c;
+  }
+  button.average {
+	background-color:#e7b00b;
+	border-color:#e7b00b;
+	min-width:65px;
+  }
+  h2.average {
+	color:#e7b00b;
+  }
+  button.unhealthy {
+	background-color:#c62828;
+	border-color:#c62828;
+  }
+  h2.unhealthy {
+	color:#c62828;
+  }
+  button.good:hover, button.average:hover, button.unhealthy:hover {
+	cursor:auto;
+  }
+  table tbody tr td {
+	border-bottom:0;
+	margin-bottom:0;
+  }
+  table thead tr th {
+  
+  }
+  details {
+	border-bottom:0;
+	margin-bottom:0;
+	padding-bottom: 10pt;
+  }
+  body>header {
+	--block-spacing-vertical:calc(var(--spacing) * 1);
+  }
+  section {
+	margin-bottom:0pt;
+  }
+  .filenames-holder, .lastvalue-holder {
+	padding-left:4pt;
+	padding-right:8pt;
+  }
+  table, 
+  table tbody tr td hgroup,
+  table tbody tr td .grid div > h3 {
+	margin:0;
+  }
+  .hidden{
+	display:none;
+  }
+  section form {
+	padding:0pt 2pt;
+  }
+  section details form table tbody tr td input[type=button] {
+	margin-bottom: 0pt;
+  }
+  input[disabled]{
+	background-color: white;
+    border-color: white;
+    opacity: 100% !important;
+    color: black;
+  }
+  @media (max-width: 480px){
+	table tbody tr td{
+		padding:0pt 2pt 0pt 2pt;
+	}
+	table tbody tr td input.range-co2 {
+		padding:0pt 4pt;
+	}
+	table tbody tr td .grid div > h3 {
+		padding-bottom:2pt;
+	}
+	table tbody tr td hgroup h3 {
+		min-height:100px;
+	}
+	.empty{
+		display:none;
+	}
+  }
+  @media (max-width: 1199px){
+	button.average {
+		padding-left:0px;
+		padding-right:8px;
+	}
+  }
+ </style>
+</head>
+<body>
+ <!-- Header -->
+ <header class="container">
+  <hgroup>
+   <h1>Local station</h1>
+   <h2>CO<sub>2</sub> monitor</h2>
+  </hgroup>
+  <nav style="display:none">
+   <ul>
+	<li>
+	 <details role="list">
+      <summary aria-haspopup="listbox" role="button" class="secondary">Theme</summary>
+      <ul role="listbox">
+	   <li><a href="#" data-theme-switcher="auto">Auto</a></li>
+	   <li><a href="#" data-theme-switcher="light">Light</a></li>
+	   <li><a href="#" data-theme-switcher="dark">Dark</a></li>
+      </ul>
+     </details>
+	</li>
+    <li style="display:none">
+     <details role="list">
+      <summary aria-haspopup="listbox">Examples</summary>
+       <ul role="listbox">
+        <li><a href="../preview/">Preview</a></li>
+        <li><a href="../preview-rtl/">Right-to-left</a></li>
+        <li><a href="../classless/">Class-less</a></li>
+        <li><a href="../basic-template/">Basic template</a></li>
+        <li><a href="../company/">Company</a></li>
+        <li><a href="../google-amp/">Google Amp</a></li>
+        <li><a href="../sign-in/">Sign in</a></li>
+        <li><a href="../bootstrap-grid/">Bootstrap grid</a></li>
+       </ul>
+      </details>
+	 </li>
+	</ul>
+  </nav>
+ </header><!-- ./ Header -->
+ <!-- Main -->
+ <main class="container"> 
+   <div class="chart-container">
+    <canvas id="myChart" width="800" height="400"></canvas>
+   </div>
+   <div class="grid">
+    <div class="filenames-holder">
+     <!-- Select -->
+     <label for="filenames">Fecha</label>
+     <select id="filenames" name="select" required></select>
+	</div>
+	<div class="lastvalue-holder">
+	 <label>Último valor</label>
+	 <input type="text" disabled />
+	 <span>&nbsp;</span>
+	</div>
+	<div class="empty">&nbsp;</div>
+   </div>
+  <!-- Configuration elements-->
+  <section id="configuration">
+   <details>
+   <summary role="button" class="contrast">Configuración</summary>
+   <form>
+	<table>
+	 <tbody>
+	  <tr>
+	   <td><button class="good" onclick="event.preventDefault()"></button></td>
+	   <td><input type="number" id="range-good" name="range-good" class="range-co2" aria-invalid="false"></td>
+	   <td><button class="average" onclick="event.preventDefault()"></button></td>
+	   <td><input type="number" id="range-unhealthy" name="range-unhealthy" class="range-co2" aria-invalid="false"></td>
+	   <td><button class="unhealthy" onclick="event.preventDefault()"></button></td>
+	  </tr>
+	 </tbody>
+	</table>
+	<table>
+	 <tbody>
+	  <tr>
+	   <td>
+	    <hgroup>
+	     <h2 class="good">Green</h2>
+	     <h3>Represents good level (below <span class="lbl-good">700</span> ppm)</h3>
+	    </hgroup>
+	   </td>
+	   <td>
+	    <hgroup>
+	     <h2 class="average">Yellow</h2>
+	     <h3>Represents average level (<span class="lbl-good">700</span> to <span class="lbl-unhealthy">900</span> ppm)</h3>
+	    </hgroup>
+	   </td>
+	   <td>
+	    <hgroup>
+	     <h2 class="unhealthy">Red</h2>
+	     <h3>Represents unhealthy level (above <span class="lbl-unhealthy">900</span> ppm)</h3>
+	    </hgroup>  
+	   </td>
+	  </tr>
+	 </tbody>
+	</table>
+    <table>
+	 <tbody>
+	  <tr>
+	   <td>
+	    <div class="grid">
+	     <div>
+		  <!-- Select -->
+		  <h3>Intervalo de medición</h3>
+		  <select id="write-interval" name="write-interval" required>
+           <option value="1">1 minuto</option>
+           <option value="2">2 minutos</option>
+           <option value="5">5 minutos</option>
+          </select> 
+	      </div>
+	      <div class="empty">&nbsp;</div>
+	      <div class="empty">&nbsp;</div>
+        </div>
+	   </td>
+	  </tr>
+	  <tr>
+	   <td>
+	    <!-- Buttons -->
+        <input type="button" value="Guardar" id="btnParams"/>
+	   </td>
+	  </tr>
+	 </tbody>
+	</table>
+   </form>
+   </details>
+  </section><!-- ./ Configuration elements-->
+  <!-- Descarga archivos -->
+  <section id="files">
+   <details>
+   <summary role="button" class="contrast">Archivos</summary>
+   <table role="grid">
+	<thead>
+	 <tr>
+	  <th class="col">Fecha</th>
+	  <th class="col">&nbsp;</th>
+	  <th class="col">&nbsp;</th>
+	 </tr>
+	</thead>
+	<tbody>
+	</tbody>
+   </table>
+  </section><!-- ./ Descarga archivos-->
+  <!-- Network elements-->
+  <section id="network">
+   <details>
+   <summary role="button" class="contrast">Configuración Red</summary>
+    <form>
+	 <!-- Select -->
+	 <label for="mode">Tipo de conexión</label>
+	 <select id="mode" name="mode" required>
+	  <option value="0">Access Point</option>
+	  <option value="1">Conexión a Red</option>
+	  <option value="2">Default</option>
+	 </select> 
+	 <div class="ap grid hidden">
+	  <!-- Markup example 1: input is inside label -->
+	  <label for="ap_ssid">Nombre Red<input type="text" id="ap_ssid" name="ap_ssid" aria-invalid="false"></label>
+	  <label for="ap_pasw">Password<input type="text" id="ap_pasw" name="ap_pasw" aria-invalid="false"></label>
+	 </div>
+	 <div class="st grid hidden">
+	  <!-- Markup example 1: input is inside label -->
+	  <label for="st_ssid">Nombre Red<input type="text" id="st_ssid" name="st_ssid" aria-invalid="false"></label>
+	  <label for="st_pasw">Password<input type="text" id="st_pasw" name="st_pasw" aria-invalid="false"></label>
+	 </div>
+	 <div class="dflt grid hidden">
+	  <!-- Markup example 1: input is inside label -->
+	  <label for="ap_ssid_dflt">Nombre Red<input type="text" id="st_ssid_dflt" name="st_ssid_dflt" disabled value="%SSID_AP_DFLT%"></label>
+	  <label for="ao_pasw_dflt">Password<input type="text" id="st_pasw_dflt" name="st_pasw_dflt" disabled value="%PASW_AP_DFLT%"></label>
+	 </div>
+	 <p class="ap desc hidden">En modo <b>Access Point</b>, el dispositivo genera su propia red WiFi y para conectarse se utilizan los parámetros de Nombre de Red y Password definidos. Una vez conectado su dirección siempre será <b>192.168.4.1</b></p>
+	 <p class="st desc hidden">En modo <b>Conexión a Red</b>, el dispositivo se conecta a una red Wifi existente y para conectarse se utilizan los parámetros de Nombre de Red y Password. Una vez conectado su dirección la asignará su servidor <b>DHCP</b>. La dirección aparecerá en el dispositivo al encenderlo.</p>
+	 <p class="dflt desc hidden">En modo <b>Default</b>, el dispositivo genera su propia red WiFi con el Nombre de Red  y Password preestablecidos. Una vez conectado su dirección siempre será <b>192.168.4.1</b></p>
+	 <!-- Buttons -->
+	 <input type="button" value="Guardar" id="btnNetwork"/> 
+    </form>
+   </details>
+  </section><!-- ./ Network elements-->
+  <!-- Calibrate elements-->
+  <section id="calibrate">
+   <details>
+    <summary role="button" class="contrast">Calibrar dispositivo</summary>
+	<div class="grid">
+	 <label for="cal_ref">Valor de referencia<input type="number" id="cal_ref" name="cal_ref" aria-invalid="false"></label>
+    </div> 
+	<p>El dispositivo debe de estar en condiciones estables por <b>2 minutos</b> antes de realizar la calibración</p>
+	<!-- Buttons -->
+	<input type="button" value="Calibrar" id="btnCalibrate"/> 
+   </details>
+  </section>
+  </main>
+ <!-- ./ Main -->
+ <!-- Footer -->
+ <footer class="container">
+  <small>Built with <a href="https://picocss.com">Pico</a></small>
+ </footer><!-- ./ Footer -->
+ <!-- Modal file -->
+ <dialog id="modal-file">
+  <article>
+   <a href="#close" aria-label="Close" class="close" data-target="modal-file" onclick="toggleModal(event)"></a>
+   <h3>¿Desea borrar el archivo del día <span class="file-date">xxxx/yy/zz</span>?</h3>
+   <!--p>¿Desea borrar el archivo del día <span class="file-date"></span>?</p-->
+   <footer>
+    <a href="#cancel" role="button" class="secondary" data-target="modal-file" onclick="toggleModal(event)">Cancel</a><a href="#confirm" role="button" data-target="modal-file" onclick="confirmModalFile(event)">Confirm</a>
+   </footer>
+  </article>
+ </dialog><!-- ./ Modal file -->
+ <!-- Modal network -->
+ <dialog id="modal-network">
+  <article>
+   <a href="#close-network" aria-label="Close" class="close" data-target="modal-network" onclick="toggleModal(event)"></a>
+   <h3>Cambio de configuración de red aplicado</h3>
+   <p class="modal-body">&nbsp;</p>
+   <footer><span></span>
+   </footer>
+  </article>
+ </dialog><!-- ./ Modal network -->
+  <!-- Modal calibrate -->
+ <!--dialog id="modal-calibrate">
+  <article>
+   <a href="#close-calibrate" aria-label="Close" class="close" data-target="modal-calibrate" onclick="toggleModal(event)"></a>
+   <h3>Calibrar dispositivo</h3>
+   <div class="grid">
+	<label for="cal_ref">Valor de referencia<input type="number" id="cal_ref" name="cal_ref" aria-invalid="false"></label>
+   </div> 
+   <footer>
+    <a href="#cancel" role="button" class="secondary" data-target="modal-calibrate" onclick="toggleModal(event)">Cancel</a><a href="#confirm" role="button" data-target="modal-calibrate" onclick="confirmModalCalibrate(event)">Calibrar</a>
+   </footer>
+   </footer>
+  </article>
+ </dialog--><!-- ./ Modal calibrate -->
+</body>
+<script src="jquery-3.6.1.min.js" type="text/javascript"></script>
+<script src="luxon.min.js" type="text/javascript"></script>
+<script src="chart.min.js" type="text/javascript"></script>
+<script src="chartjs-adp-luxon.js" type="text/javascript"></script>
+<script src="modal.min.js" type="text/javascript"></script>
+<script src="index.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+/*
+setInterval(function ( ) {
+  var fileName = $("#filenames").val();
+  loadCSVFile(fileName);
+}, 3000 ); 
+*/ 
+
+$(function() {
+    initPage();
+});
+</script>
+</html>
